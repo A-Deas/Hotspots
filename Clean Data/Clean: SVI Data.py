@@ -88,9 +88,15 @@ def load_shapefile(shapefile_path):
 
 def fix_fips(shape, new_dataframe, category):
     new_dataframe = new_dataframe[new_dataframe['FIPS'].isin(shape['FIPS'])] # Remove codes that do not exist in the shape
-    missing_fips = shape[~shape['FIPS'].isin(new_dataframe['FIPS'])]['FIPS'] # Codes present in shape but not in new_dataframe
-    missing_rows = { 'FIPS': missing_fips } # key = 'FIPS', value = pandas series with the missing fips codes
+    dropped_fips_codes = new_dataframe[~new_dataframe['FIPS'].isin(shape['FIPS'])]
+    dropped_fips_codes_list = dropped_fips_codes['FIPS'].tolist()
+    print(f'The counties in the data which are no longer present in the 2020 county structure of the United States are: {dropped_fips_codes_list}.')
 
+    missing_fips = shape[~shape['FIPS'].isin(new_dataframe['FIPS'])]['FIPS'] # Codes present in shape but not in new_dataframe
+    missing_fips_list = missing_fips.to_list()
+    print(f'The new counties in the 2020 county structure of the United states (which therefore must be added to the data) are: {missing_fips_list}.\n')
+    
+    missing_rows = { 'FIPS': missing_fips } # key = 'FIPS', value = pandas series with the missing fips codes
     for yr in range(2014, 2021):
         missing_rows[f'{yr} {category}'] = 0 # adds a NEW key for every year with corresponding value = 0
     """   For my own learning, here is the result of the dictionary: 

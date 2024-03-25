@@ -8,8 +8,8 @@ DATA_NAMES = ['FIPS'] + [f'{yr} data' for yr in range(2014, 2021)]
 FULLY_TRAINED_KALMAN_NAMES = ['FIPS'] + [f'{yr} fully trained kals' for yr in range(2014, 2021)]
 KALMAN_NAMES = ['FIPS'] + [f'{yr} kals' for yr in range(2014, 2021)]
 
-def construct_output_histo_path(dataset, training_years):
-    output_histo_path = f'choose path'
+def construct_paths(dataset, training_years):
+    output_histo_path = f'Images/ToLD/{dataset}/Trained on {training_years}'
     data_path = f'Clean Data/{dataset} rates.csv' 
     fully_trained_kalman_path = f'Kalman Predictions/{dataset} Kalman preds.csv'
     kalman_path = f'Kalman Filter Trained on Less Data/Kalman Predictions ToLD/{dataset} Kalman preds trained on {training_years} years.csv' 
@@ -62,13 +62,13 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
         if year == 2014:
             tick_positions = np.arange(0, 1, 1)
         else:
-            tick_positions = np.arange(0, 480, 40)
+            tick_positions = np.arange(0, 520, 40)
     elif dataset.startswith('SVI'):
         size = 11
         if year == 2014:
             tick_positions = np.arange(0, 1, 1)
         else: 
-            tick_positions = np.arange(0, 110, 10)
+            tick_positions = np.arange(0, 220, 20)
 
     tick_labels = [str(int(x)) for x in tick_positions]
     plt.xticks(tick_positions, tick_labels) 
@@ -85,17 +85,18 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
 
     # Display and save the histogram
     #plt.savefig(output_histo_path, bbox_inches=None, pad_inches=0, dpi=300)
-    plt.show()
+    #plt.show()
 
 def main():
     for dataset in FACTOR_LIST:
         for training_years in range(1,5):
             for year in range(2020, 2021):
-                output_histo_path, data_path, fully_trained_kalman_path, kalman_path  = construct_output_histo_path(dataset, training_years)
+                output_histo_path, data_path, fully_trained_kalman_path, kalman_path  = construct_paths(dataset, training_years)
                 data_df, kals_df, full_kals_df = load_data(data_path, DATA_NAMES, fully_trained_kalman_path, FULLY_TRAINED_KALMAN_NAMES, kalman_path, KALMAN_NAMES)
                 err_df, max_error_fips, max_error_value = calculate_error(data_df, full_kals_df, kals_df, year)  # Adjusted to receive max error info
-                print(f"Year {year}: Max Error = {max_error_value}, FIPS = {max_error_fips}")  # Print max error info
+                print(f"{dataset} trained on {training_years}: Max Error = {max_error_value}, FIPS = {max_error_fips}")  # Print max error info
                 construct_histogram(err_df, output_histo_path, dataset, training_years, year)
+        print()
 
 if __name__ == "__main__":
     main()
