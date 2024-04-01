@@ -47,10 +47,13 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
     plt.figure(figsize=(8, 6))
     full_errors = err_df[f'{year} Fully Trained Absolute Errors']
     errors = err_df[f'{year} Kals Absolute Errors']
+    max_error = errors.max().round(2)
 
-    plt.hist(full_errors, bins=50, alpha=1, label='Fully Trained Model', edgecolor='black', color='blue')
-    plt.hist(errors, bins=50, alpha=0.5, label=f'Model Trained on {training_years} Years', edgecolor='black', color='red')
+    # Plot both histograms
+    plt.hist(full_errors, bins=50, alpha=0.7, label='Fully Trained Model', edgecolor='black', color='blue')
+    n, bins, patches = plt.hist(errors, bins=50, alpha=0.5, label=f'Model Trained on {training_years} Years', edgecolor='black', color='red')
 
+    # Set the tick positions and labels
     if dataset == 'OD':
         size = 15
         if year == 2014:
@@ -73,18 +76,34 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
     tick_labels = [str(int(x)) for x in tick_positions]
     plt.xticks(tick_positions, tick_labels) 
 
-    title = f'Absolute Error Comparison for the {dataset} Kalmans in {year}'
-    plt.title(title, size=size, weight='bold')
     plt.xlabel('Absolute Error', fontsize=12, weight='bold')
     plt.ylabel('Frequency', fontsize=12, weight='bold')
     plt.legend(loc='upper right')
+    
+    # Annotate the maximum error on the histogram for 'errors' only
+    max_error_bin_index = np.digitize([max_error], bins) - 1
+    # Make sure the index is within the range of n
+    max_error_bin_index = min(max_error_bin_index[0], len(n) - 1)
+    max_error_bin_height = n[max_error_bin_index]
+    max_error_bin_value = bins[max_error_bin_index]
+        
+    plt.annotate(f'{max_error}', 
+                 xy=(max_error, max_error_bin_height), 
+                 xytext=(max_error, 150),  # Adjust the multiplier for text positioning
+                 ha='center', 
+                 va='bottom', 
+                 arrowprops=dict(facecolor='red', shrink=0.05),
+                 fontsize=10, weight='bold', color='red')
+
+    title = f'Absolute Error Comparison for the {dataset} Kalmans in {year}'
+    plt.title(title, size=size, weight='bold')
 
     ax = plt.gca()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
     # Display and save the histogram
-    #plt.savefig(output_histo_path, bbox_inches=None, pad_inches=0, dpi=300)
+    plt.savefig(output_histo_path, bbox_inches='tight', pad_inches=0.1, dpi=300)
     #plt.show()
 
 def main():
