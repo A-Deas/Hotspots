@@ -135,7 +135,7 @@ def add_color_bar(main_ax):
     cmap = mcolors.ListedColormap(colors)
     color_bounds = [i for i in range(0, 101, 5)] 
     norm = BoundaryNorm(color_bounds, cmap.N)
-    cbar = plt.colorbar(ScalarMappable(cmap=cmap, norm=norm), ax=main_ax, orientation='vertical')
+    cbar = plt.colorbar(ScalarMappable(cmap=cmap, norm=norm), ax=main_ax, orientation='vertical', fraction=0.046, pad=0.04)
     tick_positions = np.linspace(0, 100, len(color_bounds))
     cbar.set_ticks(tick_positions)
     label_list = []
@@ -143,7 +143,7 @@ def add_color_bar(main_ax):
         label_list.append(i)
     cbar.set_ticklabels([f'{label}' for label in label_list])
     cbar.ax.tick_params(axis='y', labelsize=8) 
-    cbar.set_label('Percentiles', fontsize=8, weight='bold')
+    cbar.set_label('Percentiles', fontsize=10, weight='bold')
 
 def main():
     for dataset in FACTOR_LIST:
