@@ -26,7 +26,7 @@ cats = {
 }
 
 # Constants
-SHAPE_PATH = '/Users/deas/Documents/Research/2020 USA County Shapefile/FIPS_usa.shp'
+SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 DATA_2014_PATH = 'Dirty Data/SVI_2014_US_county.csv'
 DATA_2016_PATH = 'Dirty Data/SVI_2016_US_county.csv'
 DATA_2018_PATH = 'Dirty Data/SVI_2018_US_county.csv'

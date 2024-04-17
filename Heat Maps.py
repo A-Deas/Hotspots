@@ -9,7 +9,7 @@ from matplotlib.cm import ScalarMappable
 
 # Constants
 FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
-SHAPE_PATH = '/Users/deas/Documents/Research/2020 USA County Shapefile/FIPS_usa.shp'
+SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 KAL_NAMES = ['FIPS'] + [f'{yr} Kals' for yr in range(2014, 2021)]
 DATA_NAMES = ['FIPS'] + [f'{yr} Data' for yr in range(2014, 2021)]
 
@@ -60,7 +60,7 @@ def plot_heat_map(dataset, shape, year, output_map_path):
 
     # Display and save the map
     plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
-    #plt.show()
+    plt.show()
     plt.close(fig)
 
 def construct_map(shape, fig, main_ax, year):

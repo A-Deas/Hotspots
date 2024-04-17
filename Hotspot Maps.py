@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 
 # Constants
 FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
-SHAPE_PATH = '/Users/deas/Documents/Research/2020 USA County Shapefile/FIPS_usa.shp'
+SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 KAL_NAMES = ['FIPS'] + [f'{yr} Kals' for yr in range(2014, 2021)]
 
 def construct_file_paths(dataset, year):

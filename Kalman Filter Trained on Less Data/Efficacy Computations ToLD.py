@@ -5,7 +5,7 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # Constants
-SHAPE_PATH = '/Users/deas/Documents/Research/2020 USA County Shapefile/FIPS_usa.shp'
+SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 DATA_NAMES = ['FIPS'] + [f'{yr} Data' for yr in range(2014, 2021)]
 KALMAN_NAMES = ['FIPS'] + [f'{yr} Kals' for yr in range(2014, 2021)]
 

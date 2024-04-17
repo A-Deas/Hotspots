@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Constants
-SHAPEFILE_PATH = '/Users/deas/Documents/Research/2020 USA County Shapefile/FIPS_usa.shp' # replace with your particular path
+SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 CRS_TARGET = 'EPSG:4326' # CRS for longitude and latitude coordinates
 NUM_COUNTIES = 3143  # In the United States as of 2020
 MAX_DISTANCE = 4572  # Precomputed maximum distance between population centroids in continental U.S. measured in kilometers
@@ -84,7 +84,7 @@ def save_matrix(matrix, filename):
     pd.DataFrame(matrix).to_csv(filename, index=False, header=False)
 
 def main():
-    shape = load_shapefile(SHAPEFILE_PATH)
+    shape = load_shapefile(SHAPE_PATH)
     
     # Compute and save Q_OD matrix
     Q_od = compute_Q_od(shape, NUM_COUNTIES, OD_DECAY_RATE)
