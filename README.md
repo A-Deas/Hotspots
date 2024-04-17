@@ -1,5 +1,7 @@
 $\textbf{\Large 1) Data preparation}$
 
+$\quad$ \2020 USA County Shapefile contains the cleaned and matched (to the data) shapefile needed to print the maps and construct the Q matrices. This shapefile is FIPS_usa.shp, which was constructed from the original shapefile cb_2020_us_county_20m.shp obtained from the Census Bureau's website. However, the 2020 shapefile currently on their website has been updated, thus this outdated original has been included for reference.
+
 $\quad$ \Dirty Data contains the raw biennial SVI data and centers of population from the Census Bureau.
 
 $\quad$ \Clean Data contains the cleaned and curated data files used in the analysis. The OD (mortality) and DR (dispensing) rates were cleaned in 
@@ -8,8 +10,6 @@ county structure changes from 2014 to 2020 in the form of those counties which n
 Even though the paper only showcased the results for the mortality rates, dispensing rates and disability rates, all SVI variables except 
 'Housing Cost Burden' and 'No Health Insurance' are included in this folder. The latter two categories were not available across all years in our study, 
 so they were dropped.
-
-$\quad$ \Clean Data also contains the program used to edit the shapefile ('Clean: Shapefile.py') needed to construct the maps of the United States: https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.2020.html#list-tab-790442341
 
 $\textbf{\Large 2) Running the Kalman filter}$
 
