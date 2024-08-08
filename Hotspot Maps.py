@@ -8,6 +8,7 @@ import matplotlib.patches as mpatches
 FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
 SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 KAL_NAMES = ['FIPS'] + [f'{yr} Kals' for yr in range(2014, 2021)]
+APPALACHIA_PATH = 'Clean Data/appalachia_fips_codes.csv'
 
 def construct_file_paths(dataset, year):
     output_map_path = f'Images/Hotspot Maps/{dataset}/{year} {dataset} Hotspot Map'
@@ -24,6 +25,11 @@ def load_kals(kal_path, kal_names):
     kals_df[kal_names[1:]] = kals_df[kal_names[1:]].astype(float)
     return kals_df
 
+def load_appalachia():
+    appalachia_df = pd.read_csv(APPALACHIA_PATH, header=0, names=['FIPS'])
+    appalachia_df['FIPS'] = appalachia_df['FIPS'].astype(str).apply(lambda x: x.zfill(5) if len(x) < 5 else x)
+    return appalachia_df
+
 def compute_density_values(kals_df, year):
     yearly_kals = kals_df[f'{year} Kals']
     mu, sigma = stats.norm.fit(yearly_kals)
@@ -39,20 +45,12 @@ def compute_density_values(kals_df, year):
 def merge_data_shape(shape, kals_df):
     return shape.merge(kals_df, on='FIPS')
 
-def plot_heat_map(dataset, shape, year, output_map_path):
+def plot_heat_map(dataset, shape, appalachia_df, year, output_map_path):
     fig, main_ax = plt.subplots(figsize=(10, 5))
     title = f'Hotspot Map for the {dataset} Kalmans in {year}'
     plt.title(title, size=13, weight='bold')
 
     # Construct the map
-    construct_map(shape, fig, main_ax, year)
-
-    # Display and save the map
-    plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
-    #plt.show()
-    plt.close(fig)
-
-def construct_map(shape, fig, main_ax, year):
     # Alaska and Hawaii insets
     alaska_ax = fig.add_axes([0, -0.5, 1.4, 1.4]) 
     hawaii_ax = fig.add_axes([0.24, 0.1, 0.15, 0.15])  
@@ -85,8 +83,11 @@ def construct_map(shape, fig, main_ax, year):
             density_value = row[f'{year} Density Values']
             if density_value > .95:
                 color = 'maroon'
+            elif county in appalachia_df['FIPS'].values:
+                color = 'skyblue'
             else:
                 color = 'lightgrey'
+
             inset[inset['FIPS'] == county].plot(ax=ax, color=color)
 
     # Adjust the viewing
@@ -94,13 +95,10 @@ def construct_map(shape, fig, main_ax, year):
 
     # Add the legend
     add_legend(main_ax)
-
-def define_colors():
-    colors = ['midnightblue','mediumblue','blue','royalblue', 'cornflowerblue',
-          'lightblue','powderblue','paleturquoise','lightcyan','azure',
-          'papayawhip','bisque','wheat','orange','darkorange',
-          'orangered','red','firebrick','darkred','maroon']
-    return colors
+    # Display and save the map
+    plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
+    #plt.show()
+    plt.close(fig)
 
 def set_view_window(main_ax,alaska_ax,hawaii_ax):
     main_ax.get_xaxis().set_visible(False)
@@ -114,10 +112,12 @@ def set_view_window(main_ax,alaska_ax,hawaii_ax):
     main_ax.set_ylim([25, 50])
 
 def add_legend(main_ax):
+    appalachia_patch = mpatches.Patch(color='skyblue', label='Appalachian Region')
     maroon_patch = mpatches.Patch(color='maroon', label='Hotspot')
-    main_ax.legend(handles=[maroon_patch], loc='lower right', bbox_to_anchor=(0.95, 0))
+    main_ax.legend(handles=[appalachia_patch, maroon_patch], loc='lower right', bbox_to_anchor=(1.10, 0))
 
 def main():
+    appalachia_df = load_appalachia()
     for dataset in FACTOR_LIST:
         for year in range(2014, 2021):
             output_map_path, kal_path = construct_file_paths(dataset, year)
@@ -125,7 +125,7 @@ def main():
             kals_df = load_kals(kal_path, KAL_NAMES)
             kals_df = compute_density_values(kals_df, year)
             shape = merge_data_shape(shape, kals_df)
-            plot_heat_map(dataset, shape, year, output_map_path)
+            plot_heat_map(dataset, shape, appalachia_df, year, output_map_path)
             print(f'Plot printed for {dataset} in {year}.')
 
 if __name__ == "__main__":
