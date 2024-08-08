@@ -2,11 +2,7 @@ import numpy as np
 import pandas as pd
 
 # Constants
-FACTOR_LIST = ['OD', 'DR', 'SVI Aged 17 or Younger', 'SVI Aged 65 or Older', 'SVI Below Poverty',
-               'SVI Crowding', 'SVI Disability', 'SVI Group Quarters', 'SVI Limited English Ability',
-               'SVI Minority Status', 'SVI Mobile Homes', 'SVI Multi-Unit Structures', 'SVI No High School Diploma',
-               'SVI No Vehicle', 'SVI Single-Parent Household', 'SVI Unemployed', 
-               'SVI Theme 1', 'SVI Theme 2', 'SVI Theme 3', 'SVI Theme 4', 'SVI Overall Summary']
+FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
 NUM_COUNTIES = 3143
 NUM_YEARS = 7
 DATA_COLUMN_NAMES = ['FIPS'] + [f'{yr} data' for yr in range(2014, 2021)]
