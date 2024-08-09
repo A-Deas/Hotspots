@@ -2,5 +2,5 @@
 .DS_Store
 
 # Ignore specific Python script
-Clean: Shapefile.py
+z_map_cropping.py
 
