@@ -8,12 +8,14 @@ import matplotlib.patches as mpatches
 FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
 SHAPE_PATH = '2020 USA County Shapefile/FIPS_usa.shp'
 KAL_NAMES = ['FIPS'] + [f'{yr} Kals' for yr in range(2014, 2021)]
+DATA_NAMES = ['FIPS'] + [f'{yr} Data' for yr in range(2014, 2021)]
 APPALACHIA_PATH = 'Clean Data/appalachia_fips_codes.csv'
 
 def construct_file_paths(dataset, year):
     output_map_path = f'Images/Hotspot Maps/{dataset}/{year} {dataset} Hotspot Map'
     kal_path = f'Kalman Predictions/{dataset} Kalman Preds.csv'
-    return output_map_path, kal_path
+    data_path = f'Clean Data/{dataset} rates.csv'
+    return output_map_path, kal_path, data_path
 
 def load_shapefile(shapefile_path):
     shape = gpd.read_file(shapefile_path)
@@ -24,6 +26,12 @@ def load_kals(kal_path, kal_names):
     kals_df['FIPS'] = kals_df['FIPS'].astype(str).apply(lambda x: x.zfill(5) if len(x) < 5 else x)
     kals_df[kal_names[1:]] = kals_df[kal_names[1:]].astype(float)
     return kals_df
+
+def load_data(data_path, data_names):
+    data_df = pd.read_csv(data_path, header=0, names=data_names)
+    data_df['FIPS'] = data_df['FIPS'].astype(str).apply(lambda x: x.zfill(5) if len(x) < 5 else x)
+    data_df[data_names[1:]] = data_df[data_names[1:]].astype(float)
+    return data_df
 
 def load_appalachia():
     appalachia_df = pd.read_csv(APPALACHIA_PATH, header=0, names=['FIPS'])
@@ -42,8 +50,10 @@ def compute_density_values(kals_df, year):
     kals_df[f'{year} Density Values'] = density_values
     return kals_df
 
-def merge_data_shape(shape, kals_df):
-    return shape.merge(kals_df, on='FIPS')
+def merge_shape(shape, kals_df, data_df):
+    shape = shape.merge(kals_df, on='FIPS')
+    shape = shape.merge(data_df, on='FIPS')
+    return shape
 
 def plot_heat_map(dataset, shape, appalachia_df, year, output_map_path):
     fig, main_ax = plt.subplots(figsize=(10, 5))
@@ -81,12 +91,16 @@ def plot_heat_map(dataset, shape, appalachia_df, year, output_map_path):
         for _, row in inset.iterrows():
             county = row['FIPS']
             density_value = row[f'{year} Density Values']
+            data_value = row[f'{year} Data']
             if density_value > .95:
                 color = 'maroon'
             elif county in appalachia_df['FIPS'].values:
                 color = 'skyblue'
             else:
                 color = 'lightgrey'
+
+            if data_value < 0:
+                color = 'black'
 
             inset[inset['FIPS'] == county].plot(ax=ax, color=color)
 
@@ -114,17 +128,19 @@ def set_view_window(main_ax,alaska_ax,hawaii_ax):
 def add_legend(main_ax):
     appalachia_patch = mpatches.Patch(color='skyblue', label='Appalachian Region')
     maroon_patch = mpatches.Patch(color='maroon', label='Hotspot')
-    main_ax.legend(handles=[appalachia_patch, maroon_patch], loc='lower right', bbox_to_anchor=(1.10, 0))
+    black_patch = mpatches.Patch(color='black', label='Missing Data')
+    main_ax.legend(handles=[appalachia_patch, maroon_patch, black_patch], loc='lower right', bbox_to_anchor=(1.10, 0))
 
 def main():
     appalachia_df = load_appalachia()
     for dataset in FACTOR_LIST:
         for year in range(2014, 2021):
-            output_map_path, kal_path = construct_file_paths(dataset, year)
+            output_map_path, kal_path, data_path = construct_file_paths(dataset, year)
             shape = load_shapefile(SHAPE_PATH)
             kals_df = load_kals(kal_path, KAL_NAMES)
+            data_df = load_data(data_path, DATA_NAMES)
             kals_df = compute_density_values(kals_df, year)
-            shape = merge_data_shape(shape, kals_df)
+            shape = merge_shape(shape, kals_df, data_df)
             plot_heat_map(dataset, shape, appalachia_df, year, output_map_path)
             print(f'Plot printed for {dataset} in {year}.')
 
