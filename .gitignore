@@ -4,3 +4,7 @@
 # Ignore specific Python script
 z_map_cropping.py
 
+# Ignore large files in /Covariance Matrices
+/Covariance Matrices/Q_DR.csv
+/Covariance Matrices/Q_OD.csv
+/Covariance Matrices/Q_SVI.csv

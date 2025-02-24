@@ -53,7 +53,8 @@ def run_kalman_filter(num_counties, num_years, data_df, F, H, R, Q):
 
 def kalman_estimate_update(num_counties, x, P, F, Q, H, R, data_df, t):
     year = 2014 + t
-    x = F @ x  # Predicted state estimate
+    # x = F @ x  # Predicted state estimate
+    x = F @ x + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)  # Add process noise
     P = F @ P @ F.T + Q  # Predicted estimate covariance
     y = data_df[f'{year} data'].values - H @ x  # Pre-fit residual
     S = H @ P @ H.T + R  # Residual covariance
