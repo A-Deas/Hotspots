@@ -60,7 +60,7 @@ def plot_heat_map(dataset, shape, year, output_map_path):
 
     # Display and save the map
     plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
-    plt.show()
+    # plt.show()
     plt.close(fig)
 
 def construct_map(shape, fig, main_ax, year):

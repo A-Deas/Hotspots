@@ -38,7 +38,7 @@ def print_top_errors(err_df, year):
 def construct_histogram(dataset, err_df, output_histo_path, year):
     plt.figure(figsize=(8, 6))
     errors = err_df[f'{year} Absolute Errors']
-    max_error = errors.max().round(2)
+    max_error = np.round(errors.max(), 2) if not np.isnan(errors.max()) else 0
     plt.hist(errors, bins=50, edgecolor='black')
     plt.xlabel('Absolute Error', fontsize=12, weight='bold')
     plt.ylabel('Frequency', fontsize=12, weight='bold')
