@@ -123,12 +123,12 @@ def save_new_dataframe(new_dataframe, output_path):
     new_dataframe.to_csv(output_path, index=False)
 
 def main():
-    for category, _ in cats.items():
-        output_path = get_output_path(category)
-        new_dataframe = construct_new_dataframe(DATA_2014_PATH, DATA_2016_PATH, DATA_2018_PATH, DATA_2020_PATH, category)
-        shape = load_shapefile(SHAPE_PATH)
-        new_dataframe_fixed = fix_fips(shape, new_dataframe, category)
-        save_new_dataframe(new_dataframe_fixed, output_path)
+    category = 'EPL_DISABL'  # Only run for disability rates
+    output_path = get_output_path(category)
+    new_dataframe = construct_new_dataframe(DATA_2014_PATH, DATA_2016_PATH, DATA_2018_PATH, DATA_2020_PATH, category)
+    shape = load_shapefile(SHAPE_PATH)
+    new_dataframe_fixed = fix_fips(shape, new_dataframe, category)
+    save_new_dataframe(new_dataframe_fixed, output_path)
 
 if __name__ == "__main__":
     main()

@@ -6,13 +6,12 @@ FACTOR_LIST = ['OD', 'DR', 'SVI Disability']
 NUM_COUNTIES = 3143
 NUM_YEARS = 7
 DATA_COLUMN_NAMES = ['FIPS'] + [f'{yr} data' for yr in range(2014, 2021)]
-KALMAN_COLUMN_NAMES = [f'{yr} kals' for yr in range(2014, 2021)]
 
-def construct_output_path(dataset, num_of_training_years):
-    output_path = f'Kalman Filter Trained on Less Data/Kalman Predictions ToLD/{dataset} Kalman preds trained on {num_of_training_years} years.csv' 
-    data_path = f'Clean Data/{dataset} rates.csv' 
-    q_matrix_path = f'Covariance Matrices/Q_{dataset}.csv' 
-    return output_path, data_path, q_matrix_path
+def construct_path_files(dataset):
+    data_file_path = f'Clean Data/{dataset} rates.csv' 
+    output_file_path = f'Generic Kalman Filter/Generic Predictions/{dataset} Generic Preds.csv'
+    kal_names = [f'{year} {dataset} Ests' if year < 2020 else f'{year} {dataset} Preds' for year in range(2014, 2021)]
+    return data_file_path, output_file_path, kal_names
 
 def load_data(data_path, data_names):
     data_df = pd.read_csv(data_path, names=data_names, header=0)
@@ -20,17 +19,14 @@ def load_data(data_path, data_names):
     data_df[data_names[1:]] = data_df[data_names[1:]].clip(lower=0)
     return data_df
 
-def initialize_matrices(dataset, num_counties, q_matrix_path):
+def initialize_matrices(num_counties):
     F = np.eye(num_counties)
     H = np.eye(num_counties)
     R = np.eye(num_counties) * 0.01
-    if dataset.startswith('SVI'):
-        Q = pd.read_csv('Covariance Matrices/Q_SVI.csv', header=None).to_numpy()
-    else:
-        Q = pd.read_csv(q_matrix_path, header=None).to_numpy()
+    Q = np.eye(num_counties) * 0.01
     return F, H, R, Q
 
-def run_kalman_filter(num_counties, num_years, num_of_training_years, data_df, F, H, R, Q):
+def run_kalman_filter(num_counties, num_years, data_df, F, H, R, Q):
     updated_rates = np.zeros((num_years, num_counties))
     updated_rates_covariances = np.zeros((num_years, num_counties, num_counties))
     initial_state_guess = data_df['2014 data'].values
@@ -38,24 +34,22 @@ def run_kalman_filter(num_counties, num_years, num_of_training_years, data_df, F
     updated_rates[0,:] = x
     P = np.eye(num_counties) * 0.01  # Initial state uncertainty
 
-    # Estimate and update step 
-    for t in range(1, num_of_training_years+1):
+    for t in range(1, num_years-1):
         x, P, y, K = kalman_estimate_update(num_counties, x, P, F, Q, H, R, data_df, t)
         updated_rates[t, :] = x
         updated_rates_covariances[t, :, :] = P
 
-    # Use the latest data and Kalman gain to make the remaining predictions
-    for z in range(num_of_training_years+1, num_years):
-        x = x + (K @ y) + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)
-        P = (np.eye(num_counties) - K @ H) @ P 
-        updated_rates[z, :] = x
-        updated_rates_covariances[z, :, :] = P
+    # Use 2019 data and Kalman gain to make 2020 predictions
+    x_pred = x + (K @ y) + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)
+    P_pred = (np.eye(num_counties) - K @ H) @ P 
+    updated_rates[num_years-1, :] = x_pred
+    updated_rates_covariances[num_years-1, :, :] = P_pred
 
     return updated_rates, updated_rates_covariances
 
 def kalman_estimate_update(num_counties, x, P, F, Q, H, R, data_df, t):
     year = 2014 + t
-    x = F @ x + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)  # Predicted state estimate
+    x = F @ x + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q) # Predicted state estimate
     P = F @ P @ F.T + Q  # Predicted estimate covariance
     y = data_df[f'{year} data'].values - H @ x  # Pre-fit residual
     S = H @ P @ H.T + R  # Residual covariance
@@ -71,13 +65,14 @@ def save_results(updated_rates, data_df, column_names, output_path):
     updated_rates_df.round(2).to_csv(output_path, index=False)
 
 def main():
+    np.random.seed(42) # set random seed for reproducibility 
+    
     for dataset in FACTOR_LIST:
-        for num_of_training_years in range(1, 5):
-            output_path, data_path, q_matrix_path = construct_output_path(dataset, num_of_training_years)
-            data_df = load_data(data_path, DATA_COLUMN_NAMES)
-            F, H, R, Q = initialize_matrices(dataset, NUM_COUNTIES, q_matrix_path)
-            updated_rates, _ = run_kalman_filter(NUM_COUNTIES, NUM_YEARS, num_of_training_years, data_df, F, H, R, Q)
-            save_results(updated_rates, data_df, KALMAN_COLUMN_NAMES, output_path)
+        data_file_path, output_file_path, kal_names = construct_path_files(dataset)
+        data_df = load_data(data_file_path, DATA_COLUMN_NAMES)
+        F, H, R, Q = initialize_matrices(NUM_COUNTIES)
+        updated_rates, _ = run_kalman_filter(NUM_COUNTIES, NUM_YEARS, data_df, F, H, R, Q)
+        save_results(updated_rates, data_df, kal_names, output_file_path)
 
 if __name__ == "__main__":
     main()

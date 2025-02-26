@@ -44,7 +44,8 @@ def run_kalman_filter(num_counties, num_years, data_df, F, H, R, Q):
         updated_rates_covariances[t, :, :] = P
 
     # Use 2019 data and Kalman gain to make 2020 predictions
-    x_pred = x + (K @ y)
+    # x_pred = x + (K @ y)
+    x_pred = x + (K @ y) + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)
     P_pred = (np.eye(num_counties) - K @ H) @ P 
     updated_rates[num_years-1, :] = x_pred
     updated_rates_covariances[num_years-1, :, :] = P_pred
@@ -54,7 +55,7 @@ def run_kalman_filter(num_counties, num_years, data_df, F, H, R, Q):
 def kalman_estimate_update(num_counties, x, P, F, Q, H, R, data_df, t):
     year = 2014 + t
     # x = F @ x  # Predicted state estimate
-    x = F @ x + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q)  # Add process noise
+    x = F @ x + np.random.multivariate_normal(mean=np.zeros(num_counties), cov=Q) # Predicted state estimate
     P = F @ P @ F.T + Q  # Predicted estimate covariance
     y = data_df[f'{year} data'].values - H @ x  # Pre-fit residual
     S = H @ P @ H.T + R  # Residual covariance
@@ -70,6 +71,8 @@ def save_results(updated_rates, data_df, column_names, output_path):
     updated_rates_df.round(2).to_csv(output_path, index=False)
 
 def main():
+    np.random.seed(42) # set random seed for reproducibility 
+    
     for dataset in FACTOR_LIST:
         data_file_path, q_matrix_path, output_file_path, kal_names = construct_path_files(dataset)
         data_df = load_data(data_file_path, DATA_COLUMN_NAMES)
