@@ -62,8 +62,8 @@ def plot_accuracy_map(dataset, training_years, shape, year, output_map_path):
     # Construct the map
     construct_map(shape, fig, main_ax, year)
 
-    #plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
-    plt.show()
+    plt.savefig(output_map_path, bbox_inches=None, pad_inches=0, dpi=300)
+    # plt.show()
     plt.close(fig)
 
 def construct_map(shape, fig, main_ax, year):
@@ -137,6 +137,7 @@ def main():
                 acc_df = calculate_accuracy(data_df, kals_df, year)
                 shape = merge_data_shape(shape, acc_df)
                 plot_accuracy_map(dataset, training_years, shape, year, output_map_path)
+                print(f'Plot printed for {dataset} in {year}.')
 
 if __name__ == "__main__":
     main()

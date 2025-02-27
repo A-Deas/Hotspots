@@ -47,31 +47,23 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
     plt.figure(figsize=(8, 6))
     full_errors = err_df[f'{year} Fully Trained Absolute Errors']
     errors = err_df[f'{year} Kals Absolute Errors']
-    max_error = errors.max().round(2)
+
+    full_max_error = np.round(full_errors.max(), 2) if not np.isnan(full_errors.max()) else 0
+    told_max_error = np.round(errors.max(), 2) if not np.isnan(errors.max()) else 0
+    overall_max_error = max(full_max_error, told_max_error)
 
     # Plot both histograms
     plt.hist(full_errors, bins=50, alpha=0.7, label='Fully Trained Model', edgecolor='black', color='blue')
     n, bins, patches = plt.hist(errors, bins=50, alpha=0.5, label=f'Model Trained on {training_years} Years', edgecolor='black', color='red')
 
-    # Set the tick positions and labels
-    if dataset == 'OD':
-        size = 15
-        if year == 2014:
-            tick_positions = np.arange(0, 1, 1)
-        else: 
-            tick_positions = np.arange(0, 220, 20)
-    elif dataset == 'DR':
-        size = 15
-        if year == 2014:
-            tick_positions = np.arange(0, 1, 1)
-        else:
-            tick_positions = np.arange(0, 520, 40)
-    elif dataset.startswith('SVI'):
-        size = 11
-        if year == 2014:
-            tick_positions = np.arange(0, 1, 1)
-        else: 
-            tick_positions = np.arange(0, 220, 20)
+    # Determine tick spacing dynamically
+    num_ticks = 10  # Adjust this to control the number of ticks
+    if dataset == 'DR':
+        tick_positions = np.linspace(0, 480, num=num_ticks)
+    elif dataset == 'OD':
+        tick_positions = np.linspace(0, 200, num=num_ticks)
+    elif dataset == 'SVI Disability':
+        tick_positions = np.linspace(0, 200, num=num_ticks)
 
     tick_labels = [str(int(x)) for x in tick_positions]
     plt.xticks(tick_positions, tick_labels) 
@@ -81,22 +73,22 @@ def construct_histogram(err_df, output_histo_path, dataset, training_years, year
     plt.legend(loc='upper right')
     
     # Annotate the maximum error on the histogram for 'errors' only
-    max_error_bin_index = np.digitize([max_error], bins) - 1
+    max_error_bin_index = np.digitize([told_max_error], bins) - 1
     # Make sure the index is within the range of n
     max_error_bin_index = min(max_error_bin_index[0], len(n) - 1)
     max_error_bin_height = n[max_error_bin_index]
     max_error_bin_value = bins[max_error_bin_index]
         
-    plt.annotate(f'{max_error}', 
-                 xy=(max_error, max_error_bin_height), 
-                 xytext=(max_error, 150),  # Adjust the multiplier for text positioning
+    plt.annotate(f'{told_max_error}', 
+                 xy=(told_max_error, max_error_bin_height), 
+                 xytext=(told_max_error, 150),  # Adjust the multiplier for text positioning
                  ha='center', 
                  va='bottom', 
                  arrowprops=dict(facecolor='red', shrink=0.05),
                  fontsize=10, weight='bold', color='red')
 
     title = f'Absolute Error Comparison for the {dataset} Kalmans in {year}'
-    plt.title(title, size=size, weight='bold')
+    plt.title(title, size=12, weight='bold')
 
     ax = plt.gca()
     ax.spines['top'].set_visible(False)
